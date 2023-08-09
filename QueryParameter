@@ -1,0 +1,82 @@
+<html>
+<head>
+<title>Example HTML + Javascript Block Page</title>
+<!-- We are going to use JQuery to make life a little easier, this can be done -->
+<!-- without it, but then it's not so easy, or fun.  Use whatever library you  -->
+<!-- are comfortable with.                                                     -->
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.js"></script>
+<script src="http://cdnjs.cloudflare.com/ajax/libs/purl/2.3.1/purl.min.js"></script>
+
+<script language="Javascript">
+// It is very important to unescape the information in the query parameters as they will
+// be URL encoded.  unescape lends consistent results for the purposes of this exercise
+
+/* Rot13 implementation to decode domain data */
+
+/*
+  rot13.js
+  ROT13 + ROT5 Encoder/Decoder
+  http://rot47.net
+http://rot47.net/rot13.html
+*/
+function rot13(str) 
+{
+  return str.replace(/[a-zA-Z]/g, function(c){
+    return String.fromCharCode((c <= 'Z' ? 90 : 122) >= (c = c.charCodeAt(0) + 13) ? c : c - 26);
+  });
+}
+
+$(function() {
+    // Get the domain query parameter, use example.com if we don't have one.
+    var domain = $.url().param("url");
+    if (domain) {
+        domain = rot13(unescape(domain));
+
+        // Since http:// is no longer passed, the above is the domain to print
+    }
+    else {
+        domain = "www.example.com";
+    }
+            
+    $("#domain").text(domain);
+    
+    // Set a default type to "block".  This allows us to just referance the block page
+    // and see an example of what it would look like without needing extra parameters
+    var type = $.url().param("type");
+    if (!type)
+        type = "block";
+    
+    // Show the appropriate messaging based on the redirect type
+    switch (type) {
+        // Blocked Categories/Domains
+        case "ablock":
+        case "block":
+            $("#message").text("was blocked on this network.");
+            if ($.url().param("cats")) {
+                // categories are an escaped JSON array
+                $("#message").append("<br />Blocked Categories: " + $.parseJSON(unescape($.url().param("cats"))).join(", "));
+            }
+            break;
+            
+        // Phishing Domains
+        case "phish":
+            $("#message").text("is believed to be involved in a phishing attack.");
+            break;
+
+        default:
+            // You should probably log anything like this as it means people are either
+            // playing with your block page or OpenDNS added an additional type and you
+            // should be checking the documentation to see what it means.
+            $("#message").text("is " + type);
+            break;
+    }
+});
+
+</script>
+</head>
+<body>
+<!-- I'm not very stylistic, so this is a very plain block page.  Please feel  -->
+<!-- free to do something a little nicer!                                      -->
+<span id="domain"></span> <span id="message"></span>
+</body>
+</html>
